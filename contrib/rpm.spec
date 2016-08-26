@@ -94,14 +94,6 @@ make install DESTDIR=$RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT%{_initrddir}
 install -m 0755 contrib/init.d/bolo-lhttpd  $RPM_BUILD_ROOT%{_initrddir}
 
-# copy the static assets and views
-mkdir -p $RPM_BUILD_ROOT%{_datarootdir}/%{name}
-cp -a public $RPM_BUILD_ROOT%{_datarootdir}/%{name}
-cp -a views  $RPM_BUILD_ROOT%{_datarootdir}/%{name}
-cp -a schema $RPM_BUILD_ROOT%{_datarootdir}/%{name}
-# ... but ignore the public/t/ directory
-rm -rf $RPM_BUILD_ROOT%{_datarootdir}/%{name}/public/t
-
 # remove some stuff we don't want
 find $RPM_BUILD_ROOT \( -name perllocal.pod -o -name .packlist \) -exec rm -v {} \;
 
