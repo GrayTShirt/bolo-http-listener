@@ -9,7 +9,7 @@ Group:          System Environment/Daemons
 
 BuildRoot:      %{_tmppath}/%{name}-root
 BuildArch:      noarch
-Source:         Bolo-HTTP-Listener-%{version}.tar.bz2
+Source:         Bolo-HTTP-Listener-%{version}.tar.gz
 
 BuildRequires:  perl(Test::More)
 
