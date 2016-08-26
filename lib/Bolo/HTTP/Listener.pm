@@ -18,7 +18,7 @@ use YAML::XS qw/LoadFile/;
 use Getopt::Long;
 Getopt::Long::Configure "bundling";
 
-our $VERSION = '1.0.1';
+our $VERSION = '1.0.3';
 
 my %CONFIG = (
 	 config   => '/etc/bolo/lhttpd.yml',
@@ -73,15 +73,15 @@ sub SOCK
 	return $SOCK if $SOCK;
 	$SOCK = Bolo::Socket->new->pusher;
 	LOG notice => 'initializing connection to endpoint, %s', $CONFIG{endpoint};
-	$SOCK->connect($CONFIG{endpoint}) or LOG error => "failed to connecto to endpoint %s", $CONFIG{endpoint};
+	$SOCK->connect($CONFIG{endpoint}) or LOG err => "failed to connecto to endpoint %s", $CONFIG{endpoint};
 	return $SOCK;
 }
 # preprime SOCK
-SOCK;
+# SOCK;
 sub submit
 {
 	my ($pdu) = @_;
-	SOCK->send($pdu) or LOG error => "failed to send PDU";
+	SOCK->send($pdu) or LOG err => "failed to send PDU";
 }
 # }}}
 
@@ -111,39 +111,39 @@ sub parse_submit
 	my ($type, $submit) =  @_;
 	$type = uc $type;
 	if ($type !~ $type_qr) {
-		LOG error => "invalid type submittal %s", $type;
+		LOG err => "invalid type submittal %s", $type;
 		return (400, 'invalid submit post, type not supported');
 	}
 	if (!$submit->{name}) {
-		LOG error => "%s submittal missing name", $type;
+		LOG err => "%s submittal missing name", $type;
 		return (400, "invalid submit post, namespace required");
 	}
 	if ($type =~ $metric_qr) {
 		unless (defined $submit->{value}) {
-			LOG error => '%s|%s missing value', $type, $submit->{name};
+			LOG err => '%s|%s missing value', $type, $submit->{name};
 			return (400, 'all metrics require a value');
 		}
 		LOG info => 'submitted %s to endpoint, %s, %s|%s|%s', $type, $CONFIG{endpoint}, $submit->{name}, $submit->{time} || time, $submit->{value};
 		submit([uc $type, $submit->{time} || time, $submit->{name}, $submit->{value} || $submit->{increment}]);
 	} elsif ($type eq 'STATE' or $type eq 'state') {
 		unless (defined $submit->{code}) {
-			LOG error => "%s|%s requires a code", $type, $submit->{name};
+			LOG err => "%s|%s requires a code", $type, $submit->{name};
 			return (400, "states require a code");
 		}
 		unless (defined $ST->{$submit->{code}}) {
-			LOG error => "%s|%s invalid code %s", $type, $submit->{name}, $submit->{code};
+			LOG err => "%s|%s invalid code %s", $type, $submit->{name}, $submit->{code};
 			return (400, "invalid submit code $submit->{code}");
 		}
 		$submit->{code} = $ST->{$submit->{code}};
 		unless ($submit->{message} || $submit->{msg}) {
-			LOG error => "%s|%s requires a message", $type, $submit->{name};
+			LOG err => "%s|%s requires a message", $type, $submit->{name};
 			return (400, "states require a msg/message");
 		}
 		LOG info => 'submitted STATE to endpoint, %s, %s|%s|%s|%s', $CONFIG{endpoint}, $submit->{name}, $submit->{time} || time, $submit->{code}, $submit->{message} || $submit->{msg};
 		submit(['STATE', $submit->{time} || time, $submit->{name}, $submit->{code}, $submit->{message} || $submit->{msg}]);
 	} elsif ($type eq 'EVENT' or $type eq 'event') {
 		unless ($submit->{msg} || $submit->{message}) {
-			LOG error => "%s|%s requires a message", $type, $submit->{name};
+			LOG err => "%s|%s requires a message", $type, $submit->{name};
 			return (400, "events require a msg or message field");
 		}
 		LOG info => 'submitted EVENT to endpoint, %s, %s|%s|%s', $CONFIG{endpoint}, $submit->{name}, $submit->{time} || time, $submit->{message} || $submit->{msg};
@@ -162,29 +162,29 @@ post '/submit' => sub {
 	my $batch = {} ; eval { $batch = decode_json (request->body); 1; } or
 		do {
 			status 500;
-			LOG error => "invalid json submittal %s", $@;
+			LOG err => "invalid json submittal %s", $@;
 			return "invalid json submitted $@";
 		};
 	unless (ref $batch eq 'ARRAY') {
 		status 400;
-		LOG error => 'batch not an array';
+		LOG err => 'batch not an array';
 		return "batch not an array";
 	}
 	my ($code, $message);
 	for (@$batch) {
 		unless (ref eq 'HASH') {
 			status 400;
-			LOG error => 'invalid batch element, not a hash';
+			LOG err => 'invalid batch element, not a hash';
 			return "batch element not a hash";
 		}
 		unless ($_->{type}) {
 			status 400;
-			LOG error => 'batch elements require a type key';
+			LOG err => 'batch elements require a type key';
 			return 'batch elements require a type key';
 		}
 		unless ($_->{data}) {
 			status 400;
-			LOG error => 'batch elements require a data key';
+			LOG err => 'batch elements require a data key';
 			return 'batch elements require a data key';
 		}
 		($code, $message) = parse_submit $_->{type}, $_->{data};
@@ -200,7 +200,7 @@ post '/submit/:type' => sub {
 	my $submit = {} ; eval { $submit = decode_json (request->body); 1; } or
 		do {
 			status 500;
-			LOG error => "invalid json submittal %s", $@;
+			LOG err => "invalid json submittal %s", $@;
 			return "invalid json submitted $@";
 		};
 	my ($code, $message) = parse_submit param('type'), $submit;
@@ -241,7 +241,7 @@ sub run
 	);
 	if (!$CONFIG{foreground}) {
 		LOG info => "forking to background";
-		set public       => $CONFIG{'home.dir'}.$CONFIG{static};
+		# set public       => $CONFIG{'home.dir'}.$CONFIG{static};
 		set content_type => 'application/json';
 		#open(SELFLOCK, "<$0") or LOG err => "Couldn't find $0: $!\n";
 		#flock(SELFLOCK, LOCK_EX | LOCK_NB) or LOG err => "Lock failed; is another nlma daemon running?\nShawn, are you sure you didn't mean to add the '-t' flag?\n";

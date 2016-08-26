@@ -1,5 +1,5 @@
 Name:           bolo-lhttpd
-Version:        1.0.1
+Version:        1.0.3
 Release:        1%{?dist}
 
 Summary:        A bolo rest endpoint to submit PDUs to a Bolo aggregator
