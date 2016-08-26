@@ -1,0 +1,19 @@
+#!/usr/bin/perl
+
+use warnings;
+use strict;
+
+sub ret1
+{
+	return [1, 'failure'];
+}
+
+sub ret2
+{
+	return (2, 'success');
+}
+
+my @ret = ret1;
+printf "1: %s, 2: %s\n", $ret[0], $ret[1];
+@ret = ret2;
+printf "1: %s, 2: %s\n", $ret[0], $ret[1];

@@ -1,0 +1,8 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use Bolo::HTTP::Listener;
+
+Bolo::HTTP::Listener->run;

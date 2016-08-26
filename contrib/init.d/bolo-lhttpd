@@ -1,0 +1,131 @@
+#!/bin/bash
+#
+# aos-dashd - Start up the TF Exec Dashboarding service
+#
+# chkconfig: 345 99 01
+# description: Bolo is a monitoring system and toolkit. \
+#              This service starts up the WebSocket daemon \
+#              component of the Bolo Web Interface.
+#
+# processname: tf-exec-dashd
+# config: /etc/dashboard/tf-exec.yml
+# pidfile: /var/run/tf-exec-dashd.pid
+
+### BEGIN INIT INFO
+# Provides:          aos-dashd
+# Required-Start:    $local_fs $network $syslog
+# Required-Stop:     $local_fs $syslog
+# Should-Start:
+# Should-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start up the AOS Dashboard service
+# Description:       Start the single page Dancer app
+#                    That proxies and authes for AOS
+#                    And for other customers
+### END INIT INFO
+
+# source function library
+. /etc/rc.d/init.d/functions
+
+# pull in sysconfig settings
+[ -f /etc/sysconfig/tf-exec-dashd ] && . /etc/sysconfig/tf-exec-dashd
+
+RETVAL=0
+prog="tf-exec-dashd"
+lockfile=/var/lock/subsys/$prog
+
+# Some functions to make the below more readable
+DAEMON=/usr/sbin/tf-exec-dashd
+PID_FILE=/var/run/tf-exec-dashboard.pid
+
+start()
+{
+	[ -x $DAEMON ] || exit 5
+
+	echo -n $"Starting $prog: "
+	$DAEMON $OPTIONS && success || failure
+	RETVAL=$?
+	[ $RETVAL -eq 0 ] && touch $lockfile
+	echo
+	return $RETVAL
+}
+
+stop()
+{
+	echo -n $"Stopping $prog: "
+	pkill -TERM -P $(cat $PID_FILE)
+	killproc -p $PID_FILE $DAEMON
+	RETVAL=$?
+	[ $RETVAL -eq 0 ] && rm -f $lockfile
+	echo
+}
+
+reload()
+{
+	echo -n $"Reloading $prog: "
+	killproc -p $PID_FILE $DAEMON -HUP
+	RETVAL=$?
+	echo
+}
+
+restart() {
+	stop
+	start
+}
+
+force_reload() {
+	restart
+}
+
+rh_status() {
+	status -p $PID_FILE tf-exec-dashd
+}
+
+rh_status_q() {
+	rh_status >/dev/null 2>&1
+}
+
+case "$1" in
+	start)
+		rh_status_q && exit 0
+		start
+		;;
+	stop)
+		if ! rh_status_q; then
+			rm -f $lockfile
+			exit 0
+		fi
+		stop
+		;;
+	restart)
+		restart
+		;;
+	reload)
+		rh_status_q || exit 7
+		reload
+		;;
+	force-reload)
+		force_reload
+		;;
+	condrestart|try-restart)
+		rh_status_q || exit 0
+		if [ -f $lockfile ] ; then
+			stop
+			# avoid race
+			sleep 3
+			start
+		fi
+		;;
+	status)
+		rh_status
+		RETVAL=$?
+		if [ $RETVAL -eq 3 -a -f $lockfile ] ; then
+			RETVAL=2
+		fi
+		;;
+	*)
+		echo $"Usage: $0 {start|stop|restart|reload|force-reload|condrestart|try-restart|status}"
+		RETVAL=2
+esac
+exit $RETVAL
