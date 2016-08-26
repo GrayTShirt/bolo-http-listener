@@ -1,6 +1,6 @@
 Name:           bolo-lhttpd
 Version:        1.0.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 
 Summary:        A bolo rest endpoint to submit PDUs to a Bolo aggregator
 URL:            https://github.com/graytshirt/bolo-lhttpd
@@ -19,7 +19,7 @@ Requires:       perl(Dancer)
 Requires:       perl(Sys::Syslog)
 Requires:       perl(JSON::XS)
 Requires:       perl(Gazelle)
-Requires:       perl(Bolo::Socket);
+Requires:       perl(Bolo::Socket)
 
 %description
 A Bolo HTTP Rest endpoint
