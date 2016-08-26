@@ -1,18 +1,18 @@
 #!/bin/bash
 #
-# aos-dashd - Start up the TF Exec Dashboarding service
+# bolo-lhttpd - Start up the bolo rest translator
 #
 # chkconfig: 345 99 01
 # description: Bolo is a monitoring system and toolkit. \
 #              This service starts up the WebSocket daemon \
 #              component of the Bolo Web Interface.
 #
-# processname: tf-exec-dashd
-# config: /etc/dashboard/tf-exec.yml
-# pidfile: /var/run/tf-exec-dashd.pid
+# processname: bolo-lhttpd
+# config: /etc/bolo/lhttpd.yml
+# pidfile: /var/run/bolo-lhttpd.pid
 
 ### BEGIN INIT INFO
-# Provides:          aos-dashd
+# Provides:          bolo-lhttpd
 # Required-Start:    $local_fs $network $syslog
 # Required-Stop:     $local_fs $syslog
 # Should-Start:
@@ -29,15 +29,15 @@
 . /etc/rc.d/init.d/functions
 
 # pull in sysconfig settings
-[ -f /etc/sysconfig/tf-exec-dashd ] && . /etc/sysconfig/tf-exec-dashd
+[ -f /etc/sysconfig/bolo-lhttpd ] && . /etc/sysconfig/bolo-lhttpd
 
 RETVAL=0
-prog="tf-exec-dashd"
+prog="bolo-lhttpd"
 lockfile=/var/lock/subsys/$prog
 
 # Some functions to make the below more readable
-DAEMON=/usr/sbin/tf-exec-dashd
-PID_FILE=/var/run/tf-exec-dashboard.pid
+DAEMON=/usr/sbin/bolo-lhttpd
+PID_FILE=/var/run/bolo/lhttpd.pid
 
 start()
 {
@@ -79,7 +79,7 @@ force_reload() {
 }
 
 rh_status() {
-	status -p $PID_FILE tf-exec-dashd
+	status -p $PID_FILE bolo-lhttpd
 }
 
 rh_status_q() {

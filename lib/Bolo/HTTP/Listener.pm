@@ -7,6 +7,8 @@ use Dancer qw/:script/;
 use JSON::XS qw/decode_json/;
 use Plack::Handler::Gazelle;
 
+use POSIX qw/setuid setgid/;
+use Time::HiRes qw/usleep/;
 use Bolo::Socket;
 use Cwd;
 use Fcntl qw/LOCK_EX LOCK_NB/;
@@ -16,7 +18,7 @@ use YAML::XS qw/LoadFile/;
 use Getopt::Long;
 Getopt::Long::Configure "bundling";
 
-our $VERSION = '1.0.0';
+our $VERSION = '1.0.1';
 
 my %CONFIG = (
 	 config   => '/etc/bolo/lhttpd.yml',
