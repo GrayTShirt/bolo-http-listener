@@ -92,7 +92,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 
 # copy in in the init.d files
 mkdir -p $RPM_BUILD_ROOT%{_initrddir}
-install -m 0755 contrib/init.d/tf-exec-dashd  $RPM_BUILD_ROOT%{_initrddir}
+install -m 0755 contrib/init.d/bolo-lhttpd  $RPM_BUILD_ROOT%{_initrddir}
 
 # copy the static assets and views
 mkdir -p $RPM_BUILD_ROOT%{_datarootdir}/%{name}
